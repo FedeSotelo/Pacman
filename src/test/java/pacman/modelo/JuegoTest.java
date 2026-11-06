@@ -126,7 +126,7 @@ class JuegoTest {
         j.actualizar();   // lo come en (1,2)
         j.actualizar();   // Pac-Man a (1,3); fantasma vuelve a (1,3), su origen
         assertEquals(3, j.getVidas());
-        assertEquals(EstadoFantasma.PERSIGUIENDO, j.getFantasmas().get(0).getEstado());
+        assertTrue(j.getFantasmas().get(0).estaPersiguiendo());
     }
 
     // ---- fin de partida ----
@@ -246,6 +246,6 @@ class JuegoTest {
             f.pasarTiempo();
         }
         assertEquals(f.getPosicionInicial(), f.getPosicion());
-        assertEquals(EstadoFantasma.PERSIGUIENDO, f.getEstado());
+        assertTrue(f.estaPersiguiendo());
     }
 }

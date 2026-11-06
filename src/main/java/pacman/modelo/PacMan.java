@@ -14,16 +14,16 @@ public class PacMan extends Personaje {
         direccionDeseada = d;
     }
 
+    /** Gira hacia donde pidió el jugador si puede; si no, sigue en la dirección que traía. */
     @Override
-    public void mover() {
-        posicionAnterior = posicion;
-        if (avanzar(direccionDeseada)) return;
-        avanzar(direccion);
+    protected Direccion elegirDireccion() {
+        if (puedeAvanzarHacia(direccionDeseada)) return direccionDeseada;
+        return getDireccion();
     }
 
     /** Come el punto de la celda en la que está; devuelve el punto comido o null si no había. */
     public Punto comerPunto() {
-        return laberinto.quitarPuntoEn(posicion);
+        return getLaberinto().quitarPuntoEn(getPosicion());
     }
 
     @Override
