@@ -1,6 +1,6 @@
 Trabajo Practico Obligatorio - POO
 Pac-Man Basico
-Fase: B (código del negocio con controlador y tests)
+Fase: Final (negocio + controlador + interfaz gráfica en Swing)
 Grupo N.º: 4
 
 Integrantes:
@@ -8,3 +8,10 @@ Integrantes:
 - Sotelo federico
 - Ramiro Balmaceda
 - Tomas neimerman
+
+Cómo ejecutarlo (Java 17 o superior y Maven):
+  mvn package
+  java -jar target/pacman-basico-1.0-FINAL.jar
+
+Controles: flechas o W A S D para moverse, P o ESPACIO para pausar,
+ENTER para empezar o jugar de nuevo, F2 para nueva partida.

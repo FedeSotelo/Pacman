@@ -24,69 +24,64 @@ class ControladorTest {
 
     @Test
     void moverPacManYTickAvanzanLaPartida() {
-        Controlador c = Controlador.getInstance();
-        c.nuevaPartida();
-        int fila = c.getPartida().getFilaPacMan();
-        int col = c.getPartida().getColumnaPacMan();
-        c.moverDerecha();
-        c.tick();
-        assertEquals(fila, c.getPartida().getFilaPacMan());
-        assertEquals(col + 1, c.getPartida().getColumnaPacMan());
-        assertEquals(10, c.getPartida().getPuntaje());
+        Controlador.getInstance().nuevaPartida();
+        int fila = Controlador.getInstance().getPartida().getFilaPacMan();
+        int col = Controlador.getInstance().getPartida().getColumnaPacMan();
+        Controlador.getInstance().moverDerecha();
+        Controlador.getInstance().tick();
+        assertEquals(fila, Controlador.getInstance().getPartida().getFilaPacMan());
+        assertEquals(col + 1, Controlador.getInstance().getPartida().getColumnaPacMan());
+        assertEquals(10, Controlador.getInstance().getPartida().getPuntaje());
     }
 
     @Test
     void moverIzquierdaArribaYAbajoSeAplicanAPacMan() {
-        Controlador c = Controlador.getInstance();
-        c.nuevaPartida();
-        int fila = c.getPartida().getFilaPacMan();
-        int col = c.getPartida().getColumnaPacMan();
+        Controlador.getInstance().nuevaPartida();
+        int fila = Controlador.getInstance().getPartida().getFilaPacMan();
+        int col = Controlador.getInstance().getPartida().getColumnaPacMan();
 
-        c.moverIzquierda();
-        c.tick();
-        assertEquals(col - 1, c.getPartida().getColumnaPacMan());
+        Controlador.getInstance().moverIzquierda();
+        Controlador.getInstance().tick();
+        assertEquals(col - 1, Controlador.getInstance().getPartida().getColumnaPacMan());
 
         // En el laberinto por defecto, desde el origen de Pac-Man hay pared arriba y abajo:
         // pedir esas direcciones no lo hace atravesar paredes, sigue hacia la izquierda.
-        c.moverArriba();
-        c.tick();
-        assertEquals(fila, c.getPartida().getFilaPacMan());
-        c.moverAbajo();
-        c.tick();
-        assertEquals(fila, c.getPartida().getFilaPacMan());
+        Controlador.getInstance().moverArriba();
+        Controlador.getInstance().tick();
+        assertEquals(fila, Controlador.getInstance().getPartida().getFilaPacMan());
+        Controlador.getInstance().moverAbajo();
+        Controlador.getInstance().tick();
+        assertEquals(fila, Controlador.getInstance().getPartida().getFilaPacMan());
     }
 
     @Test
     void pausarYReanudar() {
-        Controlador c = Controlador.getInstance();
-        c.nuevaPartida();
-        c.pausar();
-        assertEquals("PAUSADA", c.getPartida().getEstado());
-        c.reanudar();
-        assertEquals("EN_CURSO", c.getPartida().getEstado());
+        Controlador.getInstance().nuevaPartida();
+        Controlador.getInstance().pausar();
+        assertEquals("PAUSADA", Controlador.getInstance().getPartida().getEstado());
+        Controlador.getInstance().reanudar();
+        assertEquals("EN_CURSO", Controlador.getInstance().getPartida().getEstado());
     }
 
     @Test
     void reiniciarVuelveAEmpezar() {
-        Controlador c = Controlador.getInstance();
-        c.nuevaPartida();
-        int col = c.getPartida().getColumnaPacMan();
-        c.moverDerecha();
-        c.tick();
-        c.reiniciar();
-        assertEquals(0, c.getPartida().getPuntaje());
-        assertEquals(col, c.getPartida().getColumnaPacMan());
+        Controlador.getInstance().nuevaPartida();
+        int col = Controlador.getInstance().getPartida().getColumnaPacMan();
+        Controlador.getInstance().moverDerecha();
+        Controlador.getInstance().tick();
+        Controlador.getInstance().reiniciar();
+        assertEquals(0, Controlador.getInstance().getPartida().getPuntaje());
+        assertEquals(col, Controlador.getInstance().getPartida().getColumnaPacMan());
     }
 
     @Test
     void recibeLasNotificacionesDelJuegoYLasReenviaALaVista() {
-        Controlador c = Controlador.getInstance();
         int[] avisos = {0};
         Runnable oyente = () -> avisos[0]++;
-        c.agregarListener(oyente);
-        c.nuevaPartida();
-        c.tick();
-        c.quitarListener(oyente);
+        Controlador.getInstance().agregarListener(oyente);
+        Controlador.getInstance().nuevaPartida();
+        Controlador.getInstance().tick();
+        Controlador.getInstance().quitarListener(oyente);
         assertEquals(2, avisos[0]);
     }
 }

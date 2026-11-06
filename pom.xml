@@ -6,7 +6,7 @@
 
     <groupId>ar.edu.uade.poo</groupId>
     <artifactId>pacman-basico</artifactId>
-    <version>1.0-FASE-B</version>
+    <version>1.0-FINAL</version>
     <packaging>jar</packaging>
     <name>Pac-Man Básico</name>
 
@@ -31,6 +31,25 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.5</version>
+                <configuration>
+                    <!-- los tests de la vista dibujan en memoria, sin abrir ventanas -->
+                    <systemPropertyVariables>
+                        <java.awt.headless>true</java.awt.headless>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+            <plugin>
+                <!-- jar ejecutable: java -jar target/pacman-basico-1.0-FINAL.jar -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.1</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>pacman.Aplicacion</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
             </plugin>
         </plugins>
     </build>
