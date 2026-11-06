@@ -1,0 +1,10 @@
+Trabajo Practico Obligatorio - POO
+Pac-Man Basico
+Fase: B (código del negocio con controlador y tests)
+Grupo N.º: 4
+
+Integrantes:
+- Santiago Ruiz
+- Sotelo federico
+- Ramiro Balmaceda
+- Tomas neimerman
