@@ -49,8 +49,23 @@ public class Controlador implements JuegoListener {
         juego.reiniciar();
     }
 
-    public void moverPacMan(Direccion d) {
-        juego.cambiarDireccionPacMan(d);
+    // La vista pide el movimiento con un método por dirección: así no necesita conocer
+    // la clase Direccion del modelo (bajo acoplamiento entre vista y negocio).
+
+    public void moverArriba() {
+        juego.cambiarDireccionPacMan(Direccion.ARRIBA);
+    }
+
+    public void moverAbajo() {
+        juego.cambiarDireccionPacMan(Direccion.ABAJO);
+    }
+
+    public void moverIzquierda() {
+        juego.cambiarDireccionPacMan(Direccion.IZQUIERDA);
+    }
+
+    public void moverDerecha() {
+        juego.cambiarDireccionPacMan(Direccion.DERECHA);
     }
 
     /** Un paso de la simulación; la vista lo invoca periódicamente (por ejemplo con un javax.swing.Timer). */

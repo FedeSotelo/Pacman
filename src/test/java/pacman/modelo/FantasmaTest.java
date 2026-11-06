@@ -32,7 +32,7 @@ class FantasmaTest {
     @Test
     void arrancaPersiguiendo() {
         Fantasma f = fantasmaEn(2, 1, pacmanEn(2, 5));
-        assertEquals(EstadoFantasma.PERSIGUIENDO, f.getEstado());
+        assertTrue(f.estaPersiguiendo());
         assertTrue(f.esPeligroso());
         assertFalse(f.puedeSerComido());
     }
@@ -98,7 +98,7 @@ class FantasmaTest {
         paso(f);
         assertTrue(f.estaAsustado());
         paso(f);
-        assertEquals(EstadoFantasma.PERSIGUIENDO, f.getEstado());
+        assertTrue(f.estaPersiguiendo());
     }
 
     @Test
@@ -129,7 +129,7 @@ class FantasmaTest {
         assertTrue(f.estaRegresando());
         paso(f);                            // (2,1) = origen
         assertEquals(new Posicion(2, 1), f.getPosicion());
-        assertEquals(EstadoFantasma.PERSIGUIENDO, f.getEstado());
+        assertTrue(f.estaPersiguiendo());
     }
 
     @Test
@@ -139,7 +139,7 @@ class FantasmaTest {
         f.asustar(5);
         f.volverAlOrigen();
         assertEquals(new Posicion(2, 1), f.getPosicion());
-        assertEquals(EstadoFantasma.PERSIGUIENDO, f.getEstado());
+        assertTrue(f.estaPersiguiendo());
     }
 
     @Test
