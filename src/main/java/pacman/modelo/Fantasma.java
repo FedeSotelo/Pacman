@@ -5,43 +5,46 @@ import java.util.Random;
 import pacman.dto.FantasmaView;
 
 /**
- * Enemigo autónomo. Conoce el laberinto, a Pac-Man (su objetivo) y su propio estado,
- * y con eso decide hacia dónde moverse y cómo cambia de estado.
+ * Enemigo autónomo. Conoce el laberinto, a Pac-Man (su objetivo) y su estado actual.
+ * Cómo se mueve y cómo cambia de estado lo resuelve el objeto estado (patrón State):
+ * Fantasma no tiene ningún switch sobre su estado, sólo le delega.
  */
 public class Fantasma extends Personaje {
 
     private final PacMan objetivo;
     private final Random random;
-    private EstadoFantasma estado = EstadoFantasma.PERSIGUIENDO;
-    private int tiempoAsustado;
+    private EstadoFantasma estado;
 
     public Fantasma(Laberinto laberinto, Posicion posicionInicial, PacMan objetivo, Random random) {
         super(laberinto, posicionInicial);
         this.objetivo = objetivo;
         this.random = random;
+        this.estado = new Persiguiendo(this);
     }
 
     public Fantasma(Laberinto laberinto, Posicion posicionInicial, PacMan objetivo) {
         this(laberinto, posicionInicial, objetivo, new Random());
     }
 
-    // ---- movimiento ----
+    // ---- movimiento: la dirección la elige el estado actual ----
 
     @Override
-    public void mover() {
-        posicionAnterior = posicion;
-        avanzar(elegirDireccion());
+    protected Direccion elegirDireccion() {
+        if (direccionesPosibles().isEmpty()) return null;
+        return estado.elegirDireccion();
     }
 
-    /** Asustado se mueve al azar; persiguiendo va hacia Pac-Man; regresando va hacia su origen. */
-    private Direccion elegirDireccion() {
+    Direccion direccionHaciaPacMan() {
+        return masCercanaA(objetivo.getPosicion());
+    }
+
+    Direccion direccionHaciaSuOrigen() {
+        return masCercanaA(getPosicionInicial());
+    }
+
+    Direccion direccionAlAzar() {
         List<Direccion> posibles = direccionesPosibles();
-        if (posibles.isEmpty()) return null;
-        switch (estado) {
-            case ASUSTADO:   return posibles.get(random.nextInt(posibles.size()));
-            case REGRESANDO: return masCercanaA(posibles, posicionInicial);
-            default:         return masCercanaA(posibles, objetivo.getPosicion());
-        }
+        return posibles.get(random.nextInt(posibles.size()));
     }
 
     /**
@@ -49,17 +52,18 @@ public class Fantasma extends Personaje {
      * Sin esta regla, al buscar siempre la celda más cercana quedaría yendo y viniendo detrás de una pared.
      */
     private List<Direccion> direccionesPosibles() {
-        List<Direccion> disponibles = laberinto.direccionesDisponibles(posicion);
-        if (direccion != null && disponibles.size() > 1) disponibles.remove(direccion.opuesta());
+        List<Direccion> disponibles = getLaberinto().direccionesDisponibles(getPosicion());
+        Direccion actual = getDireccion();
+        if (actual != null && disponibles.size() > 1) disponibles.remove(actual.opuesta());
         return disponibles;
     }
 
-    /** Entre las posibles, la que lo deja más cerca del objetivo. */
-    private Direccion masCercanaA(List<Direccion> posibles, Posicion destino) {
+    /** Entre las posibles, la que lo deja más cerca del destino. */
+    private Direccion masCercanaA(Posicion destino) {
         Direccion mejor = null;
         int mejorDistancia = Integer.MAX_VALUE;
-        for (Direccion d : posibles) {
-            int distancia = posicion.mover(d).distanciaA(destino);
+        for (Direccion d : direccionesPosibles()) {
+            int distancia = getPosicion().mover(d).distanciaA(destino);
             if (distancia < mejorDistancia) {
                 mejorDistancia = distancia;
                 mejor = d;
@@ -70,54 +74,58 @@ public class Fantasma extends Personaje {
 
     // ---- cambios de estado ----
 
-    /** Pasa el tiempo de un paso: se acaba el susto o, si regresaba y llegó a su origen, vuelve a perseguir. */
+    /** Pasa el tiempo de un paso: el estado actual decide si se termina. */
     public void pasarTiempo() {
-        if (estado == EstadoFantasma.ASUSTADO) {
-            tiempoAsustado--;
-            if (tiempoAsustado <= 0) estado = EstadoFantasma.PERSIGUIENDO;
-        } else if (estado == EstadoFantasma.REGRESANDO && posicion.equals(posicionInicial)) {
-            estado = EstadoFantasma.PERSIGUIENDO;
-        }
+        estado.pasarTiempo();
     }
 
-    /** Se asusta salvo que esté regresando. Al cambiar de estado puede dar media vuelta. */
+    /** Un súper punto lo asusta, salvo que su estado actual no lo permita. */
     public void asustar(int duracion) {
-        if (estado == EstadoFantasma.REGRESANDO) return;
-        estado = EstadoFantasma.ASUSTADO;
-        tiempoAsustado = duracion;
-        direccion = null;
+        estado.asustar(duracion);
     }
 
     /** Pac-Man lo comió: regresa a su origen y puede dar media vuelta para tomar el camino más corto. */
     public void serComido() {
-        estado = EstadoFantasma.REGRESANDO;
-        direccion = null;
+        cambiarA(new Regresando(this));
+        permitirMediaVuelta();
     }
 
     @Override
     public void volverAlOrigen() {
         super.volverAlOrigen();
-        estado = EstadoFantasma.PERSIGUIENDO;
+        cambiarA(new Persiguiendo(this));
     }
 
-    // ---- consultas ----
+    /** Lo usan los estados para pasar al siguiente. */
+    void cambiarA(EstadoFantasma nuevo) {
+        estado = nuevo;
+    }
 
-    /** Sólo un fantasma asustado puede ser comido. */
+    /** Al cambiar de estado puede invertir el sentido en el próximo paso. */
+    void permitirMediaVuelta() {
+        olvidarDireccion();
+    }
+
+    // ---- consultas: las responde el estado ----
+
     public boolean puedeSerComido() {
-        return estado == EstadoFantasma.ASUSTADO;
+        return estado.puedeSerComido();
     }
 
-    /** Sólo un fantasma que persigue le quita una vida a Pac-Man. */
     public boolean esPeligroso() {
-        return estado == EstadoFantasma.PERSIGUIENDO;
+        return estado.esPeligroso();
+    }
+
+    public boolean estaPersiguiendo() {
+        return estado instanceof Persiguiendo;
     }
 
     public boolean estaAsustado() {
-        return estado == EstadoFantasma.ASUSTADO;
+        return estado instanceof Asustado;
     }
 
     public boolean estaRegresando() {
-        return estado == EstadoFantasma.REGRESANDO;
+        return estado instanceof Regresando;
     }
 
     public EstadoFantasma getEstado() {
@@ -126,6 +134,7 @@ public class Fantasma extends Personaje {
 
     /** El fantasma es el experto en su propio estado: él arma su DTO. */
     public FantasmaView toView() {
-        return new FantasmaView(posicion.getFila(), posicion.getColumna(), estado.name());
+        Posicion p = getPosicion();
+        return new FantasmaView(p.getFila(), p.getColumna(), estado.getNombre());
     }
 }

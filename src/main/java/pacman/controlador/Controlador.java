@@ -49,7 +49,8 @@ public class Controlador implements JuegoListener {
         juego.reiniciar();
     }
 
-    // La vista pide el movimiento sin conocer Direccion, que es una clase del modelo.
+    // La vista pide el movimiento con un método por dirección: así no necesita conocer
+    // la clase Direccion del modelo (bajo acoplamiento entre vista y negocio).
 
     public void moverArriba() {
         juego.cambiarDireccionPacMan(Direccion.ARRIBA);

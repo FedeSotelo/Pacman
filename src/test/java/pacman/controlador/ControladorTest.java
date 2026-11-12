@@ -36,6 +36,27 @@ class ControladorTest {
     }
 
     @Test
+    void moverIzquierdaArribaYAbajoSeAplicanAPacMan() {
+        Controlador c = Controlador.getInstance();
+        c.nuevaPartida();
+        int fila = c.getPartida().getFilaPacMan();
+        int col = c.getPartida().getColumnaPacMan();
+
+        c.moverIzquierda();
+        c.tick();
+        assertEquals(col - 1, c.getPartida().getColumnaPacMan());
+
+        // En el laberinto por defecto, desde el origen de Pac-Man hay pared arriba y abajo:
+        // pedir esas direcciones no lo hace atravesar paredes, sigue hacia la izquierda.
+        c.moverArriba();
+        c.tick();
+        assertEquals(fila, c.getPartida().getFilaPacMan());
+        c.moverAbajo();
+        c.tick();
+        assertEquals(fila, c.getPartida().getFilaPacMan());
+    }
+
+    @Test
     void pausarYReanudar() {
         Controlador c = Controlador.getInstance();
         c.nuevaPartida();

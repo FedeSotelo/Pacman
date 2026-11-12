@@ -2,15 +2,18 @@ package pacman.modelo;
 
 /**
  * Lo que comparten Pac-Man y los fantasmas: conocen el laberinto en el que se mueven,
- * su posición, su origen y su dirección. Cada uno decide por sí mismo cómo moverse.
+ * su posición, su origen y su dirección, y se mueven a sí mismos.
+ *
+ * mover() es un método plantilla: el personaje recuerda de dónde venía y avanza una celda.
+ * Lo único que cambia entre Pac-Man y un fantasma es cómo eligen la dirección (polimorfismo).
  */
 public abstract class Personaje {
 
-    protected final Laberinto laberinto;
-    protected final Posicion posicionInicial;
-    protected Posicion posicion;
-    protected Posicion posicionAnterior;
-    protected Direccion direccion;
+    private final Laberinto laberinto;
+    private final Posicion posicionInicial;
+    private Posicion posicion;
+    private Posicion posicionAnterior;
+    private Direccion direccion;
 
     protected Personaje(Laberinto laberinto, Posicion posicionInicial) {
         this.laberinto = laberinto;
@@ -19,17 +22,28 @@ public abstract class Personaje {
         this.posicionAnterior = posicionInicial;
     }
 
-    /** Avanza una celda según las reglas de cada personaje. */
-    public abstract void mover();
+    /** Avanza una celda en la dirección que elija el personaje; si hay pared, se queda quieto. */
+    public final void mover() {
+        posicionAnterior = posicion;
+        avanzar(elegirDireccion());
+    }
 
-    /** Intenta avanzar una celda en la dirección dada; devuelve false si hay pared. */
-    protected boolean avanzar(Direccion d) {
-        if (d == null) return false;
-        Posicion destino = posicion.mover(d);
-        if (laberinto.esPared(destino)) return false;
-        posicion = destino;
+    /** Cada personaje decide hacia dónde quiere ir en este paso (puede ser null: quedarse quieto). */
+    protected abstract Direccion elegirDireccion();
+
+    private void avanzar(Direccion d) {
+        if (!puedeAvanzarHacia(d)) return;
+        posicion = posicion.mover(d);
         direccion = d;
-        return true;
+    }
+
+    protected boolean puedeAvanzarHacia(Direccion d) {
+        return d != null && !laberinto.esPared(posicion.mover(d));
+    }
+
+    /** Olvida la dirección actual: en el próximo paso puede dar media vuelta. */
+    protected void olvidarDireccion() {
+        direccion = null;
     }
 
     /**
@@ -46,6 +60,14 @@ public abstract class Personaje {
         posicion = posicionInicial;
         posicionAnterior = posicionInicial;
         direccion = null;
+    }
+
+    public boolean estaEnSuOrigen() {
+        return posicion.equals(posicionInicial);
+    }
+
+    protected Laberinto getLaberinto() {
+        return laberinto;
     }
 
     public Posicion getPosicion() {
