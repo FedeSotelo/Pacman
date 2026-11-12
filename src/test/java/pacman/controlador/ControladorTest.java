@@ -2,7 +2,6 @@ package pacman.controlador;
 
 import org.junit.jupiter.api.Test;
 import pacman.dto.PartidaView;
-import pacman.modelo.Direccion;
 import pacman.modelo.EstadoPartida;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -29,7 +28,7 @@ class ControladorTest {
         c.nuevaPartida();
         int fila = c.getPartida().getFilaPacMan();
         int col = c.getPartida().getColumnaPacMan();
-        c.moverPacMan(Direccion.DERECHA);
+        c.moverDerecha();
         c.tick();
         assertEquals(fila, c.getPartida().getFilaPacMan());
         assertEquals(col + 1, c.getPartida().getColumnaPacMan());
@@ -51,7 +50,7 @@ class ControladorTest {
         Controlador c = Controlador.getInstance();
         c.nuevaPartida();
         int col = c.getPartida().getColumnaPacMan();
-        c.moverPacMan(Direccion.DERECHA);
+        c.moverDerecha();
         c.tick();
         c.reiniciar();
         assertEquals(0, c.getPartida().getPuntaje());

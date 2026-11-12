@@ -32,6 +32,15 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.5</version>
             </plugin>
+            <!-- mvn compile exec:java abre el juego -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.0</version>
+                <configuration>
+                    <mainClass>pacman.vista.Main</mainClass>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>
