@@ -5,7 +5,6 @@ import pacman.dto.FantasmaView;
 import pacman.dto.PartidaView;
 
 import javax.swing.JPanel;
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -16,13 +15,13 @@ import java.awt.RenderingHints;
 import java.util.List;
 
 /**
- * Dibuja la partida a partir del DTO que entrega el controlador.
+ * Componente que dibuja el laberinto, Pac-Man y los fantasmas a partir del DTO que entrega el controlador.
  * No conoce ninguna clase del modelo: sólo PartidaView y FantasmaView.
+ * El puntaje, las vidas y los botones son componentes aparte de la ventana.
  */
 public class PanelTablero extends JPanel {
 
     static final int TAM_CELDA = 28;
-    private static final int ALTO_BARRA = 40;
 
     private static final Color FONDO = Color.BLACK;
     private static final Color PARED = new Color(33, 33, 222);
@@ -34,7 +33,7 @@ public class PanelTablero extends JPanel {
     };
 
     public PanelTablero(int filas, int columnas) {
-        setPreferredSize(new Dimension(columnas * TAM_CELDA, filas * TAM_CELDA + ALTO_BARRA));
+        setPreferredSize(new Dimension(columnas * TAM_CELDA, filas * TAM_CELDA));
         setBackground(FONDO);
     }
 
@@ -45,24 +44,10 @@ public class PanelTablero extends JPanel {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         PartidaView partida = Controlador.getInstance().getPartida();
-        dibujarBarra(g2, partida);
-        g2.translate(0, ALTO_BARRA);
         dibujarTablero(g2, partida.getTablero());
         dibujarPacMan(g2, partida.getFilaPacMan(), partida.getColumnaPacMan());
         dibujarFantasmas(g2, partida.getFantasmas());
-        g2.translate(0, -ALTO_BARRA);
-        dibujarMensaje(g2, partida.getEstado());
-    }
-
-    private void dibujarBarra(Graphics2D g, PartidaView partida) {
-        g.setColor(Color.WHITE);
-        g.setFont(new Font(Font.MONOSPACED, Font.BOLD, 18));
-        g.drawString("PUNTAJE " + partida.getPuntaje(), 12, 27);
-        g.drawString("VIDAS", getWidth() - 160, 27);
-        g.setColor(PACMAN);
-        for (int i = 0; i < partida.getVidas(); i++) {
-            g.fillArc(getWidth() - 95 + i * 26, 11, 20, 20, 30, 300);
-        }
+        if ("PAUSADA".equals(partida.getEstado())) dibujarPausa(g2);
     }
 
     private void dibujarTablero(Graphics2D g, char[][] tablero) {
@@ -117,26 +102,14 @@ public class PanelTablero extends JPanel {
         }
     }
 
-    private void dibujarMensaje(Graphics2D g, String estado) {
-        String titulo;
-        String detalle;
-        switch (estado) {
-            case "PAUSADA": titulo = "PAUSA";      detalle = "P para continuar";        break;
-            case "GANADA":  titulo = "¡GANASTE!";  detalle = "R para jugar de nuevo";   break;
-            case "PERDIDA": titulo = "GAME OVER";  detalle = "R para jugar de nuevo";   break;
-            default: return;
-        }
-        g.setColor(new Color(0, 0, 0, 170));
+    /** Oscurece el tablero mientras la partida está en pausa. */
+    private void dibujarPausa(Graphics2D g) {
+        g.setColor(new Color(0, 0, 0, 160));
         g.fillRect(0, 0, getWidth(), getHeight());
-        g.setStroke(new BasicStroke(1));
-        escribirCentrado(g, titulo, new Font(Font.MONOSPACED, Font.BOLD, 40), PACMAN, getHeight() / 2 - 10);
-        escribirCentrado(g, detalle, new Font(Font.MONOSPACED, Font.PLAIN, 18), Color.WHITE, getHeight() / 2 + 25);
-    }
-
-    private void escribirCentrado(Graphics2D g, String texto, Font fuente, Color color, int y) {
-        g.setFont(fuente);
-        g.setColor(color);
+        g.setFont(new Font(Font.MONOSPACED, Font.BOLD, 40));
+        g.setColor(PACMAN);
         FontMetrics fm = g.getFontMetrics();
-        g.drawString(texto, (getWidth() - fm.stringWidth(texto)) / 2, y);
+        String texto = "PAUSA";
+        g.drawString(texto, (getWidth() - fm.stringWidth(texto)) / 2, getHeight() / 2);
     }
 }
