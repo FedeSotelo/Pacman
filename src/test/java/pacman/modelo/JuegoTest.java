@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import pacman.excepciones.LaberintoInvalidoException;
+import pacman.excepciones.PartidaException;
 import static org.junit.jupiter.api.Assertions.*;
 
 class JuegoTest {
@@ -53,7 +55,7 @@ class JuegoTest {
     // ---- puntos ----
 
     @Test
-    void comerUnPuntoComunSuma10YLoQuitaDelTablero() {
+    void comerUnPuntoComunSuma10YLoQuitaDelTablero() throws PartidaException {
         Juego j = juegoCon(TABLERO);
         j.cambiarDireccionPacMan(Direccion.DERECHA);
         j.actualizar();
@@ -63,7 +65,7 @@ class JuegoTest {
     }
 
     @Test
-    void comerUnSuperPuntoSuma50YAsustaALosFantasmas() {
+    void comerUnSuperPuntoSuma50YAsustaALosFantasmas() throws PartidaException {
         Juego j = juegoCon(TABLERO);
         j.cambiarDireccionPacMan(Direccion.ARRIBA);
         j.actualizar();   // (2,1): punto común
@@ -83,7 +85,7 @@ class JuegoTest {
     // ---- colisiones ----
 
     @Test
-    void colisionarConUnFantasmaPersiguiendoPierdeUnaVidaYReiniciaPosiciones() {
+    void colisionarConUnFantasmaPersiguiendoPierdeUnaVidaYReiniciaPosiciones() throws PartidaException {
         Juego j = juegoCon(PASILLO);
         j.cambiarDireccionPacMan(Direccion.DERECHA);
         j.actualizar();   // ambos van a (1,2)
@@ -94,7 +96,7 @@ class JuegoTest {
     }
 
     @Test
-    void elCruceEntrePacManYUnFantasmaTambienEsColision() {
+    void elCruceEntrePacManYUnFantasmaTambienEsColision() throws PartidaException {
         Juego j = juegoCon(PASILLO);
         Fantasma f = j.getFantasmas().get(0);
         // Dejamos al fantasma pegado a Pac-Man: Pac-Man (1,1), fantasma (1,2)
@@ -108,7 +110,7 @@ class JuegoTest {
     }
 
     @Test
-    void comerUnFantasmaAsustadoSuma200YLoMandaAlOrigen() {
+    void comerUnFantasmaAsustadoSuma200YLoMandaAlOrigen() throws PartidaException {
         Juego j = juegoCon(PASILLO);
         j.asustarFantasmas(10);
         j.cambiarDireccionPacMan(Direccion.DERECHA);
@@ -119,7 +121,7 @@ class JuegoTest {
     }
 
     @Test
-    void unFantasmaRegresandoNoQuitaVidasYRetomaLaPersecucionAlLlegar() {
+    void unFantasmaRegresandoNoQuitaVidasYRetomaLaPersecucionAlLlegar() throws PartidaException {
         Juego j = juegoCon(PASILLO);
         j.asustarFantasmas(10);
         j.cambiarDireccionPacMan(Direccion.DERECHA);
@@ -132,7 +134,7 @@ class JuegoTest {
     // ---- fin de partida ----
 
     @Test
-    void perderLasTresVidasTerminaLaPartidaEnDerrota() {
+    void perderLasTresVidasTerminaLaPartidaEnDerrota() throws PartidaException {
         Juego j = juegoCon(PASILLO);
         for (int i = 0; i < 3; i++) {
             j.cambiarDireccionPacMan(Direccion.DERECHA);
@@ -143,7 +145,7 @@ class JuegoTest {
     }
 
     @Test
-    void comerTodosLosPuntosTerminaLaPartidaEnVictoria() {
+    void comerTodosLosPuntosTerminaLaPartidaEnVictoria() throws PartidaException {
         Juego j = juegoCon(new String[] {"#####", "#P..#", "#####"});
         j.cambiarDireccionPacMan(Direccion.DERECHA);
         j.actualizar();
@@ -154,7 +156,7 @@ class JuegoTest {
     }
 
     @Test
-    void unaPartidaTerminadaNoSeActualiza() {
+    void unaPartidaTerminadaNoSeActualiza() throws PartidaException {
         Juego j = juegoCon(new String[] {"#####", "#P..#", "#####"});
         j.cambiarDireccionPacMan(Direccion.DERECHA);
         j.actualizar();
@@ -167,7 +169,7 @@ class JuegoTest {
     // ---- pausa y reinicio ----
 
     @Test
-    void mientrasEstaPausadaNadaSeMueve() {
+    void mientrasEstaPausadaNadaSeMueve() throws PartidaException {
         Juego j = juegoCon(TABLERO);
         j.cambiarDireccionPacMan(Direccion.DERECHA);
         j.pausar();
@@ -180,17 +182,55 @@ class JuegoTest {
     }
 
     @Test
-    void soloSePuedePausarUnaPartidaEnCurso() {
+    void soloSePuedePausarUnaPartidaEnCurso() throws PartidaException {
         Juego j = juegoCon(new String[] {"#####", "#P..#", "#####"});
         j.cambiarDireccionPacMan(Direccion.DERECHA);
         j.actualizar();
         j.actualizar();   // ganada
-        j.pausar();
+        PartidaException e = assertThrows(PartidaException.class, j::pausar);
+        assertEquals("Sólo se puede pausar una partida en curso", e.getMessage());
         assertEquals(EstadoPartida.GANADA, j.getEstado());
     }
 
     @Test
-    void reiniciarVuelveATodoElEstadoInicial() {
+    void reanudarUnaPartidaQueNoEstaPausadaLanzaExcepcion() {
+        Juego j = juegoCon(TABLERO);
+        assertThrows(PartidaException.class, j::reanudar);
+        assertEquals(EstadoPartida.EN_CURSO, j.getEstado());
+    }
+
+    @Test
+    void reiniciarUnaPartidaEnCursoLanzaExcepcion() throws PartidaException {
+        Juego j = juegoCon(TABLERO);
+        j.cambiarDireccionPacMan(Direccion.DERECHA);
+        j.actualizar();
+        assertThrows(PartidaException.class, j::reiniciar);
+        assertEquals(10, j.getPuntaje());   // la partida sigue igual
+    }
+
+    @Test
+    void moverAPacManConLaPartidaTerminadaLanzaExcepcion() throws PartidaException {
+        Juego j = juegoCon(new String[] {"#####", "#P..#", "#####"});
+        j.cambiarDireccionPacMan(Direccion.DERECHA);
+        j.actualizar();
+        j.actualizar();   // ganada
+        assertThrows(PartidaException.class, () -> j.cambiarDireccionPacMan(Direccion.IZQUIERDA));
+    }
+
+    @Test
+    void moverAPacManSinDireccionLanzaExcepcion() {
+        Juego j = juegoCon(TABLERO);
+        assertThrows(PartidaException.class, () -> j.cambiarDireccionPacMan(null));
+    }
+
+    @Test
+    void unJuegoConUnLaberintoSinPacManLanzaExcepcion() {
+        Laberinto sinPacMan = new Laberinto(new String[] {"#####", "#..F#", "#####"});
+        assertThrows(LaberintoInvalidoException.class, () -> new Juego(sinPacMan, new Random(1)));
+    }
+
+    @Test
+    void reiniciarVuelveATodoElEstadoInicial() throws PartidaException {
         Juego j = juegoCon(PASILLO);
         for (int i = 0; i < 3; i++) {
             j.cambiarDireccionPacMan(Direccion.DERECHA);
@@ -207,7 +247,7 @@ class JuegoTest {
     // ---- observadores ----
 
     @Test
-    void notificaALosListenersEnCadaCambio() {
+    void notificaALosListenersEnCadaCambio() throws PartidaException {
         Juego j = new Juego(new Laberinto(TABLERO), new Random(1));
         List<String> eventos = new ArrayList<>();
         j.agregarListener(juego -> eventos.add(juego.getEstado().name()));

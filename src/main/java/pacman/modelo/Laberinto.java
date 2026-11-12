@@ -3,6 +3,7 @@ package pacman.modelo;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import pacman.excepciones.LaberintoInvalidoException;
 
 /**
  * Grilla de celdas. Se construye a partir de un dibujo de texto:
@@ -11,6 +12,8 @@ import java.util.List;
  */
 public class Laberinto {
 
+    private static final String CARACTERES_VALIDOS = "#.o PF";
+
     private final String[] dibujo;
     private final int filas;
     private final int columnas;
@@ -18,7 +21,9 @@ public class Laberinto {
     private Posicion posicionInicialPacMan;
     private final List<Posicion> posicionesInicialesFantasmas = new ArrayList<>();
 
+    /** @throws LaberintoInvalidoException si el dibujo está vacío, no es rectangular, tiene caracteres desconocidos o más de un Pac-Man */
     public Laberinto(String[] dibujo) {
+        validar(dibujo);
         this.dibujo = dibujo.clone();
         this.filas = dibujo.length;
         this.columnas = dibujo[0].length();
@@ -32,6 +37,23 @@ public class Laberinto {
                 if (ch == 'F') posicionesInicialesFantasmas.add(pos);
             }
         }
+    }
+
+    private static void validar(String[] dibujo) {
+        if (dibujo == null || dibujo.length == 0 || dibujo[0].isEmpty())
+            throw new LaberintoInvalidoException("El dibujo del laberinto está vacío");
+        int pacmans = 0;
+        for (int f = 0; f < dibujo.length; f++) {
+            if (dibujo[f].length() != dibujo[0].length())
+                throw new LaberintoInvalidoException("La fila " + f + " no tiene el mismo largo que la primera");
+            for (char ch : dibujo[f].toCharArray()) {
+                if (CARACTERES_VALIDOS.indexOf(ch) < 0)
+                    throw new LaberintoInvalidoException("Carácter desconocido en la fila " + f + ": '" + ch + "'");
+                if (ch == 'P') pacmans++;
+            }
+        }
+        if (pacmans > 1)
+            throw new LaberintoInvalidoException("El laberinto tiene más de un origen de Pac-Man");
     }
 
     private static Punto puntoPara(char ch) {

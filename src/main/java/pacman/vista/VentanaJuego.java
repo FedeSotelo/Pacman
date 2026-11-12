@@ -2,6 +2,7 @@ package pacman.vista;
 
 import pacman.controlador.Controlador;
 import pacman.dto.PartidaView;
+import pacman.excepciones.PartidaException;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -18,6 +19,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -157,7 +159,16 @@ public class VentanaJuego extends JFrame {
         int respuesta = JOptionPane.showConfirmDialog(this,
                 "Puntaje final: " + puntaje + "\n¿Jugar de nuevo?",
                 titulo, JOptionPane.YES_NO_OPTION);
-        if (respuesta == JOptionPane.YES_OPTION) Controlador.getInstance().reiniciar();
+        if (respuesta != JOptionPane.YES_OPTION) return;
+        try {
+            Controlador.getInstance().reiniciar();
+        } catch (PartidaException ex) {
+            mostrarError(ex);
+        }
+    }
+
+    private void mostrarError(PartidaException ex) {
+        JOptionPane.showMessageDialog(this, ex.getMessage(), "Acción no permitida", JOptionPane.WARNING_MESSAGE);
     }
 
     // ---- eventos: clases internas que usan los métodos de la ventana ----
@@ -165,14 +176,19 @@ public class VentanaJuego extends JFrame {
     private class Teclado extends KeyAdapter {
         @Override
         public void keyPressed(KeyEvent e) {
-            switch (e.getKeyCode()) {
-                case KeyEvent.VK_UP:    case KeyEvent.VK_W: Controlador.getInstance().moverArriba();    break;
-                case KeyEvent.VK_DOWN:  case KeyEvent.VK_S: Controlador.getInstance().moverAbajo();     break;
-                case KeyEvent.VK_LEFT:  case KeyEvent.VK_A: Controlador.getInstance().moverIzquierda(); break;
-                case KeyEvent.VK_RIGHT: case KeyEvent.VK_D: Controlador.getInstance().moverDerecha();   break;
-                case KeyEvent.VK_P:     alternarPausa(); break;
-                case KeyEvent.VK_R:     if (btnReiniciar.isEnabled()) Controlador.getInstance().reiniciar(); break;
-                default: break;
+            try {
+                switch (e.getKeyCode()) {
+                    case KeyEvent.VK_UP:    case KeyEvent.VK_W: Controlador.getInstance().moverArriba();    break;
+                    case KeyEvent.VK_DOWN:  case KeyEvent.VK_S: Controlador.getInstance().moverAbajo();     break;
+                    case KeyEvent.VK_LEFT:  case KeyEvent.VK_A: Controlador.getInstance().moverIzquierda(); break;
+                    case KeyEvent.VK_RIGHT: case KeyEvent.VK_D: Controlador.getInstance().moverDerecha();   break;
+                    case KeyEvent.VK_P:     alternarPausa(); break;
+                    case KeyEvent.VK_R:     Controlador.getInstance().reiniciar(); break;
+                    default: break;
+                }
+            } catch (PartidaException ex) {
+                // con el teclado no abrimos un diálogo en medio del juego: alcanza con un aviso sonoro
+                Toolkit.getDefaultToolkit().beep();
             }
         }
     }
@@ -180,14 +196,22 @@ public class VentanaJuego extends JFrame {
     private class PausaListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            alternarPausa();
+            try {
+                alternarPausa();
+            } catch (PartidaException ex) {
+                mostrarError(ex);
+            }
         }
     }
 
     private class ReiniciarListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            Controlador.getInstance().reiniciar();
+            try {
+                Controlador.getInstance().reiniciar();
+            } catch (PartidaException ex) {
+                mostrarError(ex);
+            }
         }
     }
 
@@ -199,9 +223,9 @@ public class VentanaJuego extends JFrame {
         }
     }
 
-    private void alternarPausa() {
-        String estado = Controlador.getInstance().getPartida().getEstado();
-        if ("EN_CURSO".equals(estado)) Controlador.getInstance().pausar();
-        else if ("PAUSADA".equals(estado)) Controlador.getInstance().reanudar();
+    /** Si está pausada la reanuda; si no, intenta pausarla (falla con una partida terminada). */
+    private void alternarPausa() throws PartidaException {
+        if ("PAUSADA".equals(Controlador.getInstance().getPartida().getEstado())) Controlador.getInstance().reanudar();
+        else Controlador.getInstance().pausar();
     }
 }

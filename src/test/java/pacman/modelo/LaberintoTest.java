@@ -2,6 +2,7 @@ package pacman.modelo;
 
 import org.junit.jupiter.api.Test;
 import java.util.List;
+import pacman.excepciones.LaberintoInvalidoException;
 import static org.junit.jupiter.api.Assertions.*;
 
 class LaberintoTest {
@@ -100,5 +101,29 @@ class LaberintoTest {
             }
         assertEquals(4, superPuntos);
         assertEquals(4, lab.getPosicionesInicialesFantasmas().size());
+    }
+
+    // ---- dibujos inválidos ----
+
+    @Test
+    void unDibujoVacioLanzaExcepcion() {
+        assertThrows(LaberintoInvalidoException.class, () -> new Laberinto(new String[] {}));
+    }
+
+    @Test
+    void filasDeDistintoLargoLanzanExcepcion() {
+        assertThrows(LaberintoInvalidoException.class, () -> new Laberinto(new String[] {"#####", "#P#"}));
+    }
+
+    @Test
+    void unCaracterDesconocidoLanzaExcepcion() {
+        LaberintoInvalidoException e = assertThrows(LaberintoInvalidoException.class,
+                () -> new Laberinto(new String[] {"#####", "#PX.#", "#####"}));
+        assertTrue(e.getMessage().contains("'X'"));
+    }
+
+    @Test
+    void dosOrigenesDePacManLanzanExcepcion() {
+        assertThrows(LaberintoInvalidoException.class, () -> new Laberinto(new String[] {"#####", "#P.P#", "#####"}));
     }
 }

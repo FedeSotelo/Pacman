@@ -3,6 +3,7 @@ package pacman.controlador;
 import org.junit.jupiter.api.Test;
 import pacman.dto.PartidaView;
 import pacman.modelo.EstadoPartida;
+import pacman.excepciones.PartidaException;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ControladorTest {
@@ -23,7 +24,7 @@ class ControladorTest {
     }
 
     @Test
-    void moverPacManYTickAvanzanLaPartida() {
+    void moverPacManYTickAvanzanLaPartida() throws PartidaException {
         Controlador c = Controlador.getInstance();
         c.nuevaPartida();
         int fila = c.getPartida().getFilaPacMan();
@@ -36,7 +37,7 @@ class ControladorTest {
     }
 
     @Test
-    void moverIzquierdaArribaYAbajoSeAplicanAPacMan() {
+    void moverIzquierdaArribaYAbajoSeAplicanAPacMan() throws PartidaException {
         Controlador c = Controlador.getInstance();
         c.nuevaPartida();
         int fila = c.getPartida().getFilaPacMan();
@@ -57,7 +58,7 @@ class ControladorTest {
     }
 
     @Test
-    void pausarYReanudar() {
+    void pausarYReanudar() throws PartidaException {
         Controlador c = Controlador.getInstance();
         c.nuevaPartida();
         c.pausar();
@@ -67,13 +68,14 @@ class ControladorTest {
     }
 
     @Test
-    void reiniciarVuelveAEmpezar() {
+    void reiniciarVuelveAEmpezar() throws PartidaException {
         Controlador c = Controlador.getInstance();
         c.nuevaPartida();
         int col = c.getPartida().getColumnaPacMan();
         c.moverDerecha();
         c.tick();
-        c.reiniciar();
+        assertThrows(PartidaException.class, c::reiniciar);   // sólo se reinicia al terminar
+        c.nuevaPartida();
         assertEquals(0, c.getPartida().getPuntaje());
         assertEquals(col, c.getPartida().getColumnaPacMan());
     }

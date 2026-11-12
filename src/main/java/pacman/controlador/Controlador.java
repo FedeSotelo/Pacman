@@ -1,6 +1,7 @@
 package pacman.controlador;
 
 import pacman.dto.PartidaView;
+import pacman.excepciones.PartidaException;
 import pacman.modelo.Direccion;
 import pacman.modelo.Juego;
 import pacman.modelo.JuegoListener;
@@ -37,34 +38,37 @@ public class Controlador implements JuegoListener {
         juego.iniciar();
     }
 
-    public void pausar() {
+    // Las acciones que la partida puede rechazar propagan PartidaException:
+    // el controlador no decide cómo informar el error, eso le corresponde a la vista.
+
+    public void pausar() throws PartidaException {
         juego.pausar();
     }
 
-    public void reanudar() {
+    public void reanudar() throws PartidaException {
         juego.reanudar();
     }
 
-    public void reiniciar() {
+    public void reiniciar() throws PartidaException {
         juego.reiniciar();
     }
 
     // La vista pide el movimiento con un método por dirección: así no necesita conocer
     // la clase Direccion del modelo (bajo acoplamiento entre vista y negocio).
 
-    public void moverArriba() {
+    public void moverArriba() throws PartidaException {
         juego.cambiarDireccionPacMan(Direccion.ARRIBA);
     }
 
-    public void moverAbajo() {
+    public void moverAbajo() throws PartidaException {
         juego.cambiarDireccionPacMan(Direccion.ABAJO);
     }
 
-    public void moverIzquierda() {
+    public void moverIzquierda() throws PartidaException {
         juego.cambiarDireccionPacMan(Direccion.IZQUIERDA);
     }
 
-    public void moverDerecha() {
+    public void moverDerecha() throws PartidaException {
         juego.cambiarDireccionPacMan(Direccion.DERECHA);
     }
 

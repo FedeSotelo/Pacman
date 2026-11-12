@@ -3,6 +3,7 @@ package pacman.dto;
 import org.junit.jupiter.api.Test;
 import pacman.modelo.*;
 import java.util.Random;
+import pacman.excepciones.PartidaException;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ViewTest {
@@ -45,7 +46,7 @@ class ViewTest {
     }
 
     @Test
-    void elTableroDelViewReflejaLosPuntosComidos() {
+    void elTableroDelViewReflejaLosPuntosComidos() throws PartidaException {
         Juego j = new Juego(new Laberinto(TABLERO), new Random(1));
         j.iniciar();
         j.cambiarDireccionPacMan(Direccion.DERECHA);
